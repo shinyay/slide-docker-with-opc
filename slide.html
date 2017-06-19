@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="pandoc">
+  <meta name="author" content="Shinya Yanagihara">
+  <title>コンテナ技術/CCS/ACCS</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+  <link rel="stylesheet" href="reveal.js/css/reveal.css">
+  <style type="text/css">code{white-space: pre;}</style>
+  <link rel="stylesheet" href="reveal.js/css/theme/mozilla-devrel-light.css" id="theme">
+  <!-- Printing and PDF exports -->
+  <script>
+    var link = document.createElement( 'link' );
+    link.rel = 'stylesheet';
+    link.type = 'text/css';
+    link.href = window.location.search.match( /print-pdf/gi ) ? 'reveal.js/css/print/pdf.css' : 'reveal.js/css/print/paper.css';
+    document.getElementsByTagName( 'head' )[0].appendChild( link );
+  </script>
+  <!--[if lt IE 9]>
+  <script src="reveal.js/lib/js/html5shiv.js"></script>
+  <![endif]-->
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+
+<section>
+  <h1 class="title">コンテナ技術/CCS/ACCS <br> <img src="images/cloudgs_occs.png" /><img src="images/moby_large.png" /><img src="images/cloudgs_appcontainer.png" /></h1>
+  <p class="author">Shinya Yanagihara</p>
+  <p class="date">June-21-2017</p>
+</section>
+
+<section><section id="コンテナ技術" class="titleslide slide level1"><h1>コンテナ技術 <br><img src="images/moby_large.png" /></h1></section><section class="slide level2">
+
+<h3 id="コンテナ型仮想化">コンテナ型仮想化</h3>
+<figure>
+<img src="images/vm-container.png" />
+</figure>
+</section><section class="slide level2">
+
+<h3 id="ファイルシステムの差分管理">ファイルシステムの差分管理</h3>
+<figure>
+<img src="images/container-layers-cas.png" />
+</figure>
+</section><section class="slide level2">
+
+<h3 id="コンテナ技術の歴史">コンテナ技術の歴史</h3>
+<table>
+<thead>
+<tr class="header">
+<th>#</th>
+<th>Year</th>
+<th>Name</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td>1979</td>
+<td>choot</td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td>2000</td>
+<td>FreeBSD Jail</td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td>2005</td>
+<td>Solaris Containers</td>
+</tr>
+<tr class="even">
+<td>4</td>
+<td>2008</td>
+<td>LXC</td>
+</tr>
+<tr class="odd">
+<td>5</td>
+<td>2014</td>
+<td>Docker</td>
+</tr>
+</tbody>
+</table>
+</section><section class="slide level2">
+
+<h3 id="chroot">chroot</h3>
+<p>ルートディレクトリを変更するシステムコール</p>
+<figure>
+<img src="images/chroot.png" />
+</figure>
+</section><section class="slide level2">
+
+<h3 id="freebsd-jail">FreeBSD Jail</h3>
+<p>chroot を拡張し、ファイルシステムの名前空間以外も隔離 - プロセスリスト - ネットワークスタック ユースケース：root 権限の一般ユーザへの委譲</p>
+</section><section class="slide level2">
+
+<h3 id="solaris-containers">Solaris Containers</h3>
+<figure>
+<img src="images/zone.gif" />
+</figure>
+</section><section class="slide level2">
+
+<h3 id="lxc-linux-containers">LXC (Linux Containers)</h3>
+<p>単一の Linux カーネルをプロセス毎に隔離し、複数の仮想サーバを制御する仮想環境</p>
+<ul>
+<li>namespaces (カーネルの名前空間)</li>
+<li>cgroups (コントロールグループ )</li>
+</ul>
+<div style="text-align:center;">
+<p><img src="images/docker-isolation.png" style="width:50%;"/></p>
+</div>
+</section><section class="slide level2">
+
+<h4 id="namespaces">namespaces</h4>
+<table>
+<thead>
+<tr class="header">
+<th>名前空間</th>
+<th>隔離対象</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Mount</td>
+<td>ファイルシステム</td>
+</tr>
+<tr class="even">
+<td>UTS</td>
+<td>ホスト名, NIS ドメイン名</td>
+</tr>
+<tr class="odd">
+<td>IPC</td>
+<td>プロセス間通信, POSIX メッセージキュー</td>
+</tr>
+<tr class="even">
+<td>PID</td>
+<td>プロセスID, コンテナが違えば同一 ID 可</td>
+</tr>
+<tr class="odd">
+<td>Network</td>
+<td>ネットワークデバイス, IP アドレス, IP テーブル等</td>
+</tr>
+<tr class="even">
+<td>User</td>
+<td>ユーザ (uid), グループ (group)</td>
+</tr>
+</tbody>
+</table>
+</section><section class="slide level2">
+
+<h4 id="cgroups">cgroups</h4>
+<table>
+<thead>
+<tr class="header">
+<th>サブシステム</th>
+<th>機能概要</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>cpu</td>
+<td>CPUのスケジューリングを制御<br>相対配分: CPU時間の割当を割合で指定<br>帯域制御: タスクが実行できる合計時間を制限</td>
+</tr>
+<tr class="even">
+<td>cpuacct</td>
+<td>グループ内のタスクが消費するCPU時間をレポート</td>
+</tr>
+<tr class="odd">
+<td>cpuset</td>
+<td>グループへのCPU，メモリノードの割り当て</td>
+</tr>
+<tr class="even">
+<td>memory</td>
+<td>グループ内のタスクが消費するメモリリソースのレポートと制限</td>
+</tr>
+<tr class="odd">
+<td>blkio</td>
+<td>ブロックデバイスに対する制限<br>重みづけ配分: I/Oアクセスの比率を割合で指定<br>帯域制限: 各デバイスに対して行える操作数の制限</td>
+</tr>
+<tr class="even">
+<td>devices</td>
+<td>グループ内のタスクのデバイスへのアクセスの許可，禁止の指定</td>
+</tr>
+<tr class="odd">
+<td>net_cls</td>
+<td>グループ内のプロセスが発信するパケットの制御</td>
+</tr>
+<tr class="even">
+<td>net_prio</td>
+<td>グループ内のタスクのネットワークの優先度の制御</td>
+</tr>
+<tr class="odd">
+<td>freezer</td>
+<td>グループ内のプロセス全てを同時に一時停止・再開</td>
+</tr>
+</tbody>
+</table>
+</section><section class="slide level2">
+
+<h3 id="docker">Docker</h3>
+<ul>
+<li>Docker &lt;= 0.8 は LXC (や libvirt, systemd-nspawn) 経由で名前空間, cgroups 等を利用</li>
+<li>Docker &gt;= 0.9 は libcontainer ドライバ経由でカーネルのコンテナAPIを直接コールするため、LXCがなくても稼働可能</li>
+</ul>
+<p><strong>Docker Engine</strong> で制御</p>
+<div style="text-align:center;">
+<p><img src="images/docker-engine.png" style="width:50%;"/></p>
+</div>
+</section><section class="slide level2">
+
+<h4 id="docker-engine-アーキテクチャ">Docker Engine アーキテクチャ</h4>
+<figure>
+<img src="images/runc-containerd.png" />
+</figure>
+</section><section class="slide level2">
+
+<h4 id="runc">runC</h4>
+<ul>
+<li>Docker のコアコンテナランタイム</li>
+<li>Docker &gt;= 1.11 は、OCI 準拠の構成となり、Docker Engine っが <strong>containerd</strong> と通信し、containerd はランタイムとして、<strong>runC</strong> をす使用する</li>
+</ul>
+<h5 id="open-containers-initiative">Open Containers Initiative</h5>
+<ul>
+<li><img src="images/oci.png" /> コンテナの標準仕様を議論・策定する標準化団体</li>
+</ul>
+<h5 id="runc-1">runC</h5>
+<ul>
+<li>オープン・コンテナ・ランタイム仕様に準拠するリファレンス実装</li>
+<li>runC のみでCLIとして機能しコンテナの起動が可能（デーモン不要）</li>
+<li>コンテナの実行レイヤのコアランタイム</li>
+</ul>
+<div style="text-align:center;">
+<p><img src="images/runc.png" style="width:40%;"/></p>
+</div>
+</section><section class="slide level2">
+
+<h4 id="containerd">containerd</h4>
+<ul>
+<li>Docker のコアコンテナランタイム</li>
+<li>実行中のコンテナの監視・管理</li>
+<li>コンテナイメージの管理（レジストリへのpush/pull）</li>
+</ul>
+<figure>
+<img src="images/containerd.png" />
+</figure>
+</section></section>
+<section><section id="container-cloud-service" class="titleslide slide level1"><h1>Container Cloud Service <br><img src="images/cloudgs_occs.png" /></h1></section><section class="slide level2">
+
+<h4 id="dockerd">dockerd</h4>
+<ul>
+<li>Docker &gt;= 1.12 は、<a href="https://docs.docker.com/v1.11/engine/reference/commandline/daemon/">docker daemon</a> が、<a href="https://docs.docker.com/engine/reference/commandline/dockerd/">dockerd</a> に変更</li>
+<li>docker swarm との統合</li>
+<li>1.11までは、クラスタ管理のために、Docker Engine とは別に Swarm マネージャ/Swarm ノードがj必要</li>
+<li>1.12からは、dockerd がDocker Daemon の役割と、Swarm ノードの役割を担う</li>
+</ul>
+</section><section class="slide level2">
+
+<h3 id="sub-slide">Sub Slide</h3>
+<ol type="1">
+<li>list</li>
+<li>list</li>
+</ol>
+</section></section>
+<section><section id="application-container-cloud-service" class="titleslide slide level1"><h1>Application Container Cloud Service <br><img src="images/cloudgs_appcontainer.png" /></h1></section><section class="slide level2">
+
+<h3 id="sub-slide-1">Sub Slide</h3>
+<ol type="1">
+<li>list</li>
+<li>list</li>
+</ol>
+</section></section>
+    </div>
+  </div>
+
+  <script src="reveal.js/lib/js/head.min.js"></script>
+  <script src="reveal.js/js/reveal.js"></script>
+
+  <script>
+
+      // Full list of configuration options available at:
+      // https://github.com/hakimel/reveal.js#configuration
+      Reveal.initialize({
+        // Transition style
+        transition: 'page', // none/fade/slide/convex/concave/zoom
+
+        // Optional reveal.js plugins
+        dependencies: [
+          { src: 'reveal.js/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+          { src: 'reveal.js/plugin/zoom-js/zoom.js', async: true },
+          { src: 'reveal.js/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+              { src: 'reveal.js/plugin/notes/notes.js', async: true }
+        ]
+      });
+    </script>
+    </body>
+</html>
